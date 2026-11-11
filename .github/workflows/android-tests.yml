@@ -1,0 +1,73 @@
+name: Android UI tests
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  android-ui-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      ANDROID_APP_PATH: app/SmartHQ.apk
+      ANDROID_DEVICE_NAME: emulator-5554
+      ANDROID_PLATFORM_VERSION: "12"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Python dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Install Appium and Android driver
+        run: |
+          npm install --global appium@2
+          appium driver install uiautomator2
+
+      - name: Verify APK is available
+        run: test -f "$ANDROID_APP_PATH"
+
+      - name: Verify test credentials are configured
+        env:
+          SMARTHQ_USERNAME: ${{ secrets.SMARTHQ_USERNAME }}
+          SMARTHQ_PASSWORD: ${{ secrets.SMARTHQ_PASSWORD }}
+        run: |
+          test -n "$SMARTHQ_USERNAME"
+          test -n "$SMARTHQ_PASSWORD"
+
+      - name: Run tests on Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          SMARTHQ_USERNAME: ${{ secrets.SMARTHQ_USERNAME }}
+          SMARTHQ_PASSWORD: ${{ secrets.SMARTHQ_PASSWORD }}
+        with:
+          api-level: 31
+          target: google_apis
+          arch: x86_64
+          emulator-options: -no-window -no-audio -no-boot-anim
+          script: python -m pytest
+
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results/
+          if-no-files-found: ignore

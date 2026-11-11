@@ -1,3 +1,4 @@
+import os
 import time
 import pytest
 import allure
@@ -34,9 +35,20 @@ def driver(appium_service):
     drv.quit()
 
 
+@pytest.fixture(scope="session")
+def valid_credentials():
+    username = os.getenv("SMARTHQ_USERNAME")
+    password = os.getenv("SMARTHQ_PASSWORD")
+    if not username or not password:
+        pytest.fail(
+            "Set SMARTHQ_USERNAME and SMARTHQ_PASSWORD before running authenticated tests."
+        )
+    return username, password
+
+
 # ---------- LOGIN (FUNCTION SCOPE - IMPORTANT) ----------
 @pytest.fixture(scope="function")
-def logged_in_driver(driver):
+def logged_in_driver(driver, valid_credentials):
     home = HomePage(driver)
     login = LoginPage(driver)
 
@@ -58,7 +70,7 @@ def logged_in_driver(driver):
     login.is_signin_button_present()
 
     # Perform login
-    login.login("dhamodartest36@gmail.com", "Dhamodar@236")
+    login.login(*valid_credentials)
 
     return driver
 
