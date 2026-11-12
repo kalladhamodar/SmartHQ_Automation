@@ -1,5 +1,6 @@
 from selenium.webdriver.common.by import By
 from appium.webdriver.common.appiumby import AppiumBy
+from selenium.common.exceptions import TimeoutException
 from pages.base_page import BasePage
 
 
@@ -43,21 +44,19 @@ class DashboardPage(BasePage):
         self.click(self.bluetooth_close_btn)
 
     def handle_post_login_dialogs(self):
-        """
-        Safely handle all post-login popups/dialogs.
-        Each action is wrapped in try/except — dialogs may or may not appear.
-        """
-        for action in [
-            self.click_tutorial_skip,
-            self.click_done,
-            self.click_allow,
-            self.click_location_access,
-            self.click_bluetooth_close,
-        ]:
+        dialogs = [
+            (self.tutorial_skip_btn, self.click_tutorial_skip),
+            (self.done_btn, self.click_done),
+            (self.allow_btn, self.click_allow),
+            (self.location_access_btn, self.click_location_access),
+            (self.bluetooth_close_btn, self.click_bluetooth_close),
+        ]
+        for locator, action in dialogs:
             try:
-                action()
-            except Exception:
-                pass
+                if self.is_element_present(locator, timeout=5):
+                    action()
+            except TimeoutException:
+                continue
 
         self.is_dashboard_loaded()
         self.is_settings_button_present()

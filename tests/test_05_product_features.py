@@ -3,9 +3,11 @@ from pages.product_features import ProductFeaturesPage
 
 
 @pytest.mark.order(8)
-def test_product_features(dashboard_driver):
-    """Verify all Product Features sections are accessible and navigable."""
-    pf = ProductFeaturesPage(dashboard_driver)
+def test_product_features(model_selected_driver):
+    """Verify Product Features on the dashboard after selecting an appliance."""
+    pf = ProductFeaturesPage(model_selected_driver)
+
+
 
     # Validate Product Features screen is loaded
     pf.is_product_features_screen_loaded()
@@ -19,13 +21,13 @@ def test_product_features(dashboard_driver):
     # Training Manual
     pf.is_training_manuals_displayed()
     print("✅ Training Manual opened")
-    pf.clik_back_button()
+    pf.click_back_button()
     print("✅ Returned from Training Manual")
 
     # Product Overview
     pf.is_product_overview_displayed()
     print("✅ Product Overview opened")
-    pf.clk_back_button()
+    pf.click_back_button()
     print("✅ Returned from Product Overview")
 
     # Ethernet Port → Kitchen Appliances

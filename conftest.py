@@ -14,7 +14,6 @@ from pages.login_page import LoginPage
 from pages.model_number import ModelPage
 from pages.multi_model_page import MultiModelPage
 from pages.dashboard_page import DashboardPage
-from pages.logut_page import logut_page
 
 
 # ---------- APPIUM SERVICE ----------
@@ -34,6 +33,22 @@ def driver(appium_service):
     yield drv
     drv.quit()
 
+# ---------- APP RESET ----------
+#app reset fixture to ensure a clean state before each test
+
+APP_PACKAGE = "com.smarthqpro.service.field"
+
+@pytest.fixture(autouse=True)
+def reset_app(driver):
+    driver.terminate_app(APP_PACKAGE)
+
+    driver.execute_script(
+        "mobile: clearApp",
+        {"appId": APP_PACKAGE}
+    )
+
+    driver.activate_app(APP_PACKAGE)
+    yield
 
 @pytest.fixture(scope="session")
 def valid_credentials():
@@ -57,8 +72,8 @@ def logged_in_driver(driver, valid_credentials):
         home.click_service_tech()
         home.click_sign_in_here()
     except Exception:
-        driver.close_app()
-        driver.launch_app()
+        driver.terminate_app("com.smarthqpro.service.field")
+        driver.activate_app("com.smarthqpro.service.field")
         home.click_service_tech()
         home.click_sign_in_here()
 
@@ -72,6 +87,9 @@ def logged_in_driver(driver, valid_credentials):
     # Perform login
     login.login(*valid_credentials)
 
+    dashboard = DashboardPage(driver)
+    dashboard.handle_post_login_dialogs()
+
     return driver
 
 
@@ -80,22 +98,6 @@ def logged_in_driver(driver, valid_credentials):
 def dashboard_driver(logged_in_driver):
     drv = logged_in_driver
     dashboard = DashboardPage(drv)
-
-    actions = [
-        dashboard.click_tutorial_skip,
-        dashboard.click_done,
-        dashboard.click_allow,
-        dashboard.click_location_access,
-        dashboard.click_bluetooth_close,
-    ]
-
-    for action in actions:
-        try:
-            action()
-        except Exception as e:
-            print(f"Skipped dashboard action: {e}")
-
-    # Validate dashboard loaded
     dashboard.is_dashboard_loaded()
     dashboard.is_settings_button_present()
 
@@ -108,15 +110,14 @@ def model_selected_driver(dashboard_driver):
     drv = dashboard_driver
     model = ModelPage(drv)
 
-    try:
-        model.wait.until(
+
+    model.wait.until(
             EC.presence_of_element_located((
                 AppiumBy.XPATH,
                 '//android.view.View[contains(@content-desc,"SMARTHQ SERVICE")]'
             ))
-        )
-    except Exception:
-        pass
+    )
+
 
     search_text = "GFD28"
     expected_model = "GFD28GYNFS"
@@ -127,6 +128,8 @@ def model_selected_driver(dashboard_driver):
     assert result, f"❌ Model '{expected_model}' selection failed"
 
     model.click_done_btn()
+    dashboard = DashboardPage(drv)
+    dashboard.is_dashboard_loaded()
 
     return drv
 
@@ -151,29 +154,13 @@ def multi_model_driver(dashboard_driver):
     return drv
 
 
-# ---------- LOGOUT ----------
-@pytest.fixture(scope="function")
-def logout_driver(dashboard_driver):
-    drv = dashboard_driver
-    logout = logut_page(drv)
-
-    try:
-        logout.click_settings()
-        logout.click_logout()
-        logout.click_yes_logout()
-    except Exception as e:
-        print(f"Logout skipped due to: {e}")
-
-    return drv
-
-
 # ---------- SCREENSHOT ON FAILURE ----------
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     outcome = yield
     report = outcome.get_result()
 
-    if report.when == "call" and report.failed:
+    if report.when in ("setup", "call") and report.failed:
 
         driver = None
         for key in item.funcargs:

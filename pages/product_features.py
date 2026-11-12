@@ -19,6 +19,10 @@ class ProductFeaturesPage(BasePage):
 
     # ---------- Validations ----------
 
+    def __init__(self, driver):
+        super().__init__(driver)
+
+
     def is_product_features_screen_loaded(self):
         """Validate Product Features screen is displayed."""
         assert self.is_element_present(self.product_features_title, timeout=15), \
@@ -76,3 +80,4 @@ class ProductFeaturesPage(BasePage):
         assert self.is_element_present(self.outside_popup, timeout=10), \
             "❌ Scrim element not found — cannot dismiss popup by tapping outside"
         self.click(self.outside_popup)
+

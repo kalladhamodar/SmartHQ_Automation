@@ -1,4 +1,5 @@
 import pytest
+from pages.home_page import HomePage
 from pages.logut_page import logut_page
 
 
@@ -17,4 +18,5 @@ def test_logout(dashboard_driver):
 
     # Validate confirmation dialog and click Yes — also validates home screen appears
     logout.click_yes_logout()
+    HomePage(dashboard_driver).is_home_screen_loaded()
     print("✅ Logout confirmed — returned to home screen")

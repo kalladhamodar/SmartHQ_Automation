@@ -30,7 +30,7 @@ class LoginPage(BasePage):
         return self.get_element_text(self.ERROR_MSG)
 
     def clear_username(self):
-        self.find(self.USERNAME).clear()
+        self.find_element(self.USERNAME).clear()
 
     def clear_password(self):
-        self.find(self.PASSWORD).clear()
+        self.find_element(self.PASSWORD).clear()

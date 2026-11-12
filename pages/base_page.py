@@ -49,3 +49,6 @@ class BasePage:
     def get_current_package(self):
         """Returns currently active app package."""
         return self.driver.current_package
+
+    def find_element(self, locator):
+        return self.driver.find_element(*locator)

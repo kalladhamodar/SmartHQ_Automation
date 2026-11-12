@@ -33,15 +33,15 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
 
       - name: Install Python dependencies
         run: python -m pip install -r requirements.txt
 
       - name: Install Appium and Android driver
         run: |
-          npm install --global appium@2
-          appium driver install uiautomator2
+          npm install --global appium@4.0.0-beta.6
+          appium driver install uiautomator2@9.0.2
 
       - name: Verify APK is available
         run: test -f "$ANDROID_APP_PATH"

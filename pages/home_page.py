@@ -37,7 +37,13 @@ class HomePage(BasePage):
     def navigate_to_login(self):
         if self.is_service_tech_button_present():
             self.click_service_tech()
+            self.click_sign_in_here()
         else:
-            self.driver.close_app()
-            self.driver.launch_app()
+            self.driver.terminate_app("com.smarthqpro.service.field")
+            self.driver.activate_app("com.smarthqpro.service.field")
             self.click_service_tech()
+            self.click_sign_in_here()
+
+    def is_home_screen_loaded(self):
+        assert self.is_service_tech_button_present(), \
+            "❌ Home screen not loaded — 'Service Tech' button not found"

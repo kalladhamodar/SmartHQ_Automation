@@ -74,7 +74,7 @@ class ModelPage(BasePage):
 
         for btn in buttons:
             value = btn.get_attribute("content-desc")
-            if value == expected_model or value.startswith(search_text):
+            if value == expected_model:
                 btn.click()
                 print(f"✅ Selected: {value}")
                 return True
@@ -136,7 +136,7 @@ class ModelPage(BasePage):
         matched = False
         for btn in buttons:
             value = btn.get_attribute("content-desc")
-            if value == model or value.startswith(model[:6]):
+            if value == model:
                 btn.click()
                 print(f"✅ Selected suggestion: {value}")
                 matched = True

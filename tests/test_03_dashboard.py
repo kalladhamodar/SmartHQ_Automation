@@ -18,22 +18,8 @@ class Testdashboard:
         print("✅ Settings button found on dashboard")
 
     def test_dashboard_handle_dialogs(self, dashboard_driver):
-        """Verify all post-login dialogs are handled and dashboard is ready."""
+        """Verify the login fixture handles dialogs and leaves the dashboard ready."""
         dashboard = DashboardPage(dashboard_driver)
-
-        for action in [
-            dashboard.click_tutorial_skip,
-            dashboard.click_done,
-            dashboard.click_allow,
-            dashboard.click_location_access,
-            dashboard.click_bluetooth_close,
-        ]:
-            try:
-                action()
-            except Exception:
-                pass
-
-        # Final validation — dashboard must be loaded
         dashboard.is_dashboard_loaded()
         dashboard.is_settings_button_present()
-        print("✅ All dialogs handled. Dashboard is fully ready.")
+        print("✅ Dashboard is ready after post-login dialogs")
